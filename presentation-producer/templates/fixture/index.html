@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>video-generator smoke fixture</title>
+    <style>
+      /* Shadcn-conventioned design tokens, so the bundled fixture doubles as the
+         offline target for --extract-brand and exercises the accent-vs-ink trap:
+         --primary here is the ACTION colour (the button), NOT ink. A correct
+         extraction must route it to the deck's accent, and route --foreground to
+         the deck's ink. getComputedStyle resolves all of these on :root. */
+      :root {
+        color-scheme: dark;
+        --background: #0f172a;
+        --foreground: #f8fafc;
+        --card: #1e293b;
+        --muted: #243044;
+        --muted-foreground: #94a3b8;
+        --primary: #38bdf8;        /* action colour: the button and metric */
+        --primary-foreground: #0b1220;
+        --border: #334155;
+        --radius: 14px;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; min-height: 100vh; background: var(--background); color: var(--foreground);
+        font-family: Inter, system-ui, -apple-system, sans-serif;
+        display: grid; place-items: center; padding: 48px;
+      }
+      main { width: min(1100px, 100%); }
+      h1 { color: var(--primary); font-size: 44px; margin: 0 0 8px; }
+      p.sub { color: var(--muted-foreground); margin: 0 0 32px; font-size: 20px; }
+      .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+      .card {
+        background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+        padding: 20px; transition: all .2s ease;
+      }
+      .card h2 { margin: 0 0 6px; font-size: 20px; }
+      .card .metric { font-size: 34px; font-weight: 700; color: var(--primary); }
+      .card.selected { border-color: var(--primary); box-shadow: 0 0 26px rgba(56,189,248,.35); }
+      .row { display: flex; gap: 12px; align-items: center; margin-top: 28px; }
+      button {
+        background: var(--primary); color: var(--primary-foreground); border: 0; border-radius: 10px;
+        padding: 14px 22px; font-size: 17px; font-weight: 700; cursor: pointer;
+      }
+      button.secondary { background: var(--border); color: #e2e8f0; }
+      input {
+        background: #0b1220; border: 1px solid var(--border); color: var(--foreground);
+        border-radius: 10px; padding: 13px 15px; font-size: 16px; min-width: 280px;
+      }
+      #status { margin-top: 22px; font-size: 22px; font-weight: 700; min-height: 30px; }
+      .ok { color: #4ade80; }
+      /* A deliberately animated element: proves screenshot({animations:'disabled'})
+         produces byte-stable stills. */
+      .pulse { animation: pulse 1.4s ease-in-out infinite; }
+      @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
+      .badge {
+        display: inline-block; background: #7f1d1d; color: #fecaca;
+        padding: 5px 12px; border-radius: 999px; font-size: 14px; font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Capacity Overview</h1>
+      <p class="sub">Smoke fixture for the video-generator pipeline.</p>
+
+      <div class="grid">
+        <div class="card" id="card-a">
+          <h2>Available Beds</h2>
+          <div class="metric">18</div>
+          <span class="badge pulse">live</span>
+        </div>
+        <div class="card" id="card-b">
+          <h2>Awaiting Allocation</h2>
+          <div class="metric">7</div>
+        </div>
+        <div class="card" id="card-c">
+          <h2>Median Wait</h2>
+          <div class="metric">42m</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <input id="reason" aria-label="Override reason" placeholder="Override reason" />
+        <button id="approve">Approve Allocation</button>
+        <button class="secondary" id="reset">Reset</button>
+      </div>
+
+      <div id="status" aria-live="polite"></div>
+    </main>
+
+    <script>
+      const status = document.getElementById('status');
+      document.getElementById('approve').addEventListener('click', () => {
+        document.getElementById('card-b').classList.add('selected');
+        status.textContent = 'Allocation approved';
+        status.className = 'ok';
+      });
+      document.getElementById('reset').addEventListener('click', () => {
+        document.getElementById('card-b').classList.remove('selected');
+        status.textContent = '';
+        status.className = '';
+        document.getElementById('reason').value = '';
+      });
+    </script>
+  </body>
+</html>

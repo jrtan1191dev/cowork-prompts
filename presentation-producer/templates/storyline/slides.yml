@@ -1,0 +1,139 @@
+# Starter storyline for a SLIDES presentation: a deck that stands on its own.
+#
+# storyline.yml is the authored source. `node scripts/compile.mjs` turns it into
+# storyboard.json, which is generated, committed, and not hand-edited.
+#
+# Comments are the reason YAML was chosen over JSON — a slide's *why* belongs
+# next to the slide, and it survives every regeneration because this file is
+# never rewritten by the pipeline.
+#
+# Layout rules (which layout takes how many cards, and why card 1 must carry the
+# most text) are NOT restated here: references/slide-layouts.md is the one
+# catalogue, and a second copy in a template is how the two drift apart.
+#
+# HOW THIS DIFFERS FROM A VIDEO PRESENTATION
+#   - no `video:` block, no `narration:`, no `capture` or `footage` entries —
+#     all four are rejected by validation, because a deck has no film to feed
+#   - `notes:` carries presenter text. It reaches the HTML deck's notes strip.
+#     A note that restates the slide is correct here; a narration line that
+#     restated the slide would be dead air, which is why they are two fields
+#   - nothing in this pipeline is billable: there is no approval gate, so a run
+#     renders, verifies geometry, and prints where the artifacts landed
+
+presentation:
+  mode: slides
+  title: Q3 Platform Review
+  archetype: scr          # situation -> complication -> resolution
+  engine: html            # html | marp
+  theme: light            # light | dark, same token names in both
+  formats: [png, pdf, html]   # html is the one artifact that shows `notes:`
+  # Canvases the deck renders onto. 16:9 is what every projector, Keynote,
+  # Google Slides and PowerPoint deck lives on, so it is the format rather than
+  # a default. An individual slide may add its own (see 04-metric).
+  orientations: [landscape]
+  # design: ../shared/DESIGN.md
+  # designDark: ../shared/DESIGN.dark.md
+
+entries:
+  # Answer first. A deck is read by people who cannot leave the room, so the
+  # recommendation goes on slide one and the argument justifies it afterwards.
+  - id: 00-answer
+    type: slide
+    layout: hero
+    pill: Recommendation
+    title: Consolidate the three schedulers into one
+    body: One engine, one queue, and one place to look when a job is late.
+    cards:
+      - icon: check-check
+        title: Decision needed today
+        text: Approve the consolidation spike for the first two weeks of Q3.
+    notes: Open here and stay on this slide until someone asks "why now". If cost comes up first, jump to slide 4.
+
+  # ---- Situation ---------------------------------------------------------
+  - id: 01-situation
+    type: slide
+    role: situation
+    layout: stat-deepdive
+    title: Where scheduled work runs today
+    stat:
+      value: '3'
+      unit: schedulers
+      label: each with its own retry semantics and its own on-call runbook
+    cards:
+      - icon: server
+        title: Batch platform
+        text: Owns nightly settlement and the reconciliation window.
+        detail: Since 2019
+      - icon: timer
+        title: In-process timers
+        text: Added per service, invisible to the platform team until they fail.
+        detail: Added ad hoc
+    notes: Do not editorialise here. State the three and move on — the pain lands on the next slide.
+
+  # ---- Complication ------------------------------------------------------
+  # The archetype rule: a complication must name a cost. The validator warns
+  # when it cannot find one, because "fragmentation" is not a cost.
+  - id: 02-complication
+    type: slide
+    role: complication
+    layout: comparison
+    title: Three schedulers mean three incidents
+    cards:
+      - icon: phone-off
+        title: Today
+        text: A late job is triaged by whoever recognises which scheduler owns it. Ownership is tribal knowledge, so the first twenty minutes of every incident are spent deciding who should be awake.
+        detail: 20 minutes to route
+      - icon: gauge
+        title: What it costs
+        text: Nine hours of engineer time per month goes to routing rather than fixing, and settlement breaches are found by finance rather than by us.
+        detail: 9 engineer-hours a month
+    notes: This is the slide that wins or loses the room. Let the 9 hours sit for a beat before moving on.
+
+  # ---- Resolution --------------------------------------------------------
+  - id: 03-resolution
+    type: slide
+    role: resolution
+    layout: process-flow
+    title: One scheduler, three guarantees
+    cards:
+      - icon: shield-check
+        title: Single ownership
+        text: Every scheduled job has one owner, one retry policy and one dashboard. Routing an incident stops being a decision and becomes a lookup.
+      - icon: sliders-horizontal
+        title: Declared retries
+        text: Retry and backoff are declared per job, not coded per service.
+      - icon: scroll-text
+        title: One audit trail
+        text: Every run, retry and skip lands in the same event log.
+    notes: If asked about migration risk, the answer is expand-contract — both schedulers run until the last job moves.
+
+  # A slide that also renders as a portrait card. The deck stays landscape; this
+  # one gets an extra 1080x1920 PNG for the internal comms channel. The union is
+  # what renders, so the portrait pass contains this slide alone and the run
+  # warns that the portrait artifact is a partial deck — which is the point here.
+  - id: 04-metric
+    type: slide
+    role: resolution
+    layout: stat-deepdive
+    orientations: [landscape, vertical]
+    title: What consolidation buys
+    stat:
+      value: '9'
+      unit: hours
+      label: of engineer time returned every month
+    cards:
+      - icon: activity
+        title: Routing disappears
+        text: Ownership is a lookup, not a conversation.
+      - icon: timer
+        title: Breaches found by us
+        text: Settlement alerts fire before finance notices.
+    notes: The 9 hours is measured from last quarter's incident log, not estimated. Say so if challenged.
+
+  - id: 05-close
+    type: slide
+    layout: statement
+    pill: Next step
+    title: Approve a two-week spike
+    body: Two engineers, two weeks, one migrated job class — enough to prove the retry semantics hold before anything else moves.
+    notes: Stop here. Do not advance past this slide during questions.

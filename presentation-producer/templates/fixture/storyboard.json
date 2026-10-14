@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "title": "Smoke Test",
+    "fps": 30,
+    "captureAspect": "landscape",
+    "outputs": [
+      { "aspect": "landscape" },
+      { "aspect": "vertical", "strategy": "reframe" }
+    ],
+    "voice": { "provider": "auto", "gender": "female" },
+    "subtitles": { "enabled": true, "sidecar": false },
+    "fixedTime": "2026-01-15T09:00:00.000Z",
+    "background": "#0f172a"
+  },
+  "scenes": [
+    {
+      "id": "01-overview",
+      "title": "Capacity overview",
+      "narration": "This dashboard shows live bed capacity. Eighteen beds are available, and seven patients are awaiting allocation.",
+      "visualEngine": "playwright_web",
+      "captureMode": "stills",
+      "actionSpec": {
+        "url": "/index.html",
+        "roiSelector": "#card-a"
+      },
+      "assert": {
+        "visible": ["Capacity Overview", "Available Beds"],
+        "notVisible": ["Something went wrong"]
+      }
+    },
+    {
+      "id": "02-approve",
+      "title": "Approve an allocation",
+      "narration": "The coordinator records a reason, then approves the allocation with a single click.",
+      "visualEngine": "playwright_web",
+      "captureMode": "screencast",
+      "roiSelector": "#card-b",
+      "actionSpec": {
+        "url": "/index.html",
+        "steps": [
+          { "action": "fill", "label": "Override reason", "target": "Override reason", "value": "Telemetry capacity", "typeDelayMs": 55 },
+          { "action": "click", "role": "button", "name": "Approve Allocation", "target": "Approve Allocation", "delayMs": 700 },
+          { "action": "waitForText", "value": "Allocation approved" },
+          { "action": "highlight", "selector": "#status", "target": "Allocation approved", "delayMs": 1600 }
+        ]
+      },
+      "assert": {
+        "visible": ["Approve Allocation"],
+        "notVisible": ["Something went wrong"]
+      }
+    }
+  ]
+}

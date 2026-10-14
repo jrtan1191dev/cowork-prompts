@@ -1,0 +1,172 @@
+# Starter storyline for a VIDEO presentation: the SCR archetype end to end.
+#
+# storyline.yml is the authored source. `node scripts/compile.mjs` turns it into
+# storyboard.json, which is generated, committed, and not hand-edited.
+#
+# Comments are the reason YAML was chosen over JSON — a slide's *why* belongs
+# next to the slide, and it survives every regeneration because this file is
+# never rewritten by the pipeline.
+#
+# Layout rules (which layout takes how many cards, and why card 1 must carry the
+# most text) are NOT restated here: references/slide-layouts.md is the one
+# catalogue, and a second copy in a template is how the two drift apart.
+
+presentation:
+  mode: video             # this file drives a film AND its companion deck
+  title: Bed Allocation Without Phone Calls
+  archetype: scr          # situation -> complication -> resolution
+  engine: html            # html | marp
+  theme: light            # light | dark, same token names in both
+  formats: [png, pdf]     # add `html` for the presentable, convertible bundle
+  # Brand. Both paths are relative to THIS presentation directory, and are
+  # DECLARED rather than discovered so which brand a deck was built from shows in
+  # a diff. `../shared/DESIGN.md` is how two presentations deliberately share one.
+  # design: ../shared/DESIGN.md
+  # designDark: ../shared/DESIGN.dark.md
+  # fontFile: fonts/brand.woff2   # a .woff2 Fontsource does not publish
+
+# Everything the film needs and a deck has no use for. A `mode: slides`
+# presentation must not carry this block at all.
+video:
+  aspect: landscape
+  outputs:
+    - aspect: landscape
+    # Landscape only by default. Every extra aspect is a full second render of
+    # every scene plus its own subtitle burn, so the vertical cut is opt-in
+    # rather than something you pay for without asking:
+    # - aspect: vertical    # 9:16; slides reflow via `native`, they own their CSS
+    # - aspect: square      # 1:1
+  voice:
+    provider: auto
+    gender: female
+  baseUrl: http://127.0.0.1:8080
+  fixedTime: '2026-01-15T09:00:00.000Z'
+
+entries:
+  # Beat 0 — the answer, stated up front. Deck only.
+  #
+  # An executive in a meeting cannot leave, so answer-first costs nothing. A
+  # video viewer can leave at any second, so the video starts at the Situation
+  # and this slide never appears there.
+  - id: 00-answer
+    type: slide
+    in: [deck]
+    layout: hero
+    pill: Recommendation
+    title: Move bed allocation from phone calls to a constraint engine
+    body: Four hard constraints, three soft scores, under fifty milliseconds — and a coordinator who approves in one click.
+    cards:
+      - icon: check-check
+        title: One click to approve
+        text: Top-three recommendations with the rationale attached.
+
+  # ---- Situation ---------------------------------------------------------
+  - id: 01-situation
+    type: slide
+    role: situation
+    layout: stat-deepdive
+    title: How an admission is agreed today
+    stat:
+      value: '3'
+      unit: doctors
+      label: must agree before a single bed is released
+    cards:
+      - icon: stethoscope
+        title: ED attending
+        text: Sets the acuity tier from what is in front of them.
+        detail: Step one
+      - icon: users
+        title: Specialist on call
+        text: Confirms or disputes the tier by phone.
+        detail: Step two
+    narration: Every admission starts with an assessment, and nothing moves until a specialist agrees with it.
+
+  # ---- Complication ------------------------------------------------------
+  # The archetype rule: a complication must name a cost. The validator warns
+  # when it cannot find one, because "streamlining" is not a cost.
+  - id: 02-complication
+    type: slide
+    role: complication
+    layout: comparison
+    title: The agreement is the bottleneck
+    cards:
+      - icon: phone-off
+        title: Today
+        text: Coordinators chase consensus by phone while the queue grows.
+        detail: Four hours of waiting
+      - icon: gauge
+        title: What it costs
+        text: Beds sit empty during the afternoon discharge peak.
+        detail: Empty beds, waiting patients
+    narration: When the two disagree, someone picks up a phone, and the patient waits about four hours for a call to end.
+
+  # ---- Resolution --------------------------------------------------------
+  # Each resolution beat is followed by a capture that demonstrates it. The
+  # slide makes the claim; the capture is the evidence.
+  - id: 03-resolution
+    type: slide
+    role: resolution
+    layout: process-flow
+    title: Safety first, then operations
+    cards:
+      - icon: shield-check
+        title: Absolute invariants
+        text: Gender cohorting and airborne isolation can never be overridden.
+      - icon: sliders-horizontal
+        title: Operational constraints
+        text: Ward class and telemetry permit an override with a reason code.
+      - icon: git-merge
+        title: Discordance resolution
+        text: The higher acuity wins and telemetry requirements are unioned.
+    narration: The engine separates what is negotiable from what is not, and resolves disagreement toward the safer answer.
+
+  - id: 04-approve
+    type: capture
+    narration: The coordinator sees the ranked queue, and approving an allocation takes one click.
+    url: /bmu
+    roiSelector: '#recommendations'
+    overlay: chapter          # framing over the live app, no separate slide
+    steps:
+      - action: click
+        role: button
+        name: Approve
+        target: Approve
+        delayMs: 800
+      - action: waitForText
+        value: Allocation approved
+    assert:
+      visible: ['Bed Allocation', 'Approve']
+      notVisible: ['Sign in', 'Something went wrong']
+
+  - id: 05-outcome
+    type: slide
+    role: resolution
+    layout: tiled
+    title: What changes downstream
+    cards:
+      - icon: activity
+        title: Zero phone calls
+        text: ED, BMU and ward staff read the same queue.
+      - icon: timer
+        title: Under fifty milliseconds
+        text: Constraint evaluation is synchronous, not a nightly batch.
+      - icon: scroll-text
+        title: Every decision auditable
+        text: Overrides carry a structured institutional reason code.
+    narration: The result is a queue every role can read, and an override nobody can make without saying why.
+
+  # ---- Optional b-roll ---------------------------------------------------
+  # Generated footage is frozen as an input: produce it once, commit the file,
+  # keep the prompt as provenance. It never depicts UI, text or product
+  # behaviour — only atmosphere, because a diffusion model cannot be trusted
+  # with a factual claim about software.
+  # - id: 06-broll
+  #   type: footage
+  #   narration: Meanwhile, the corridor keeps filling.
+  #   src: footage/corridor.mp4
+  #   trim: { in: 1.2, out: 9.4 }
+  #   generate:
+  #     provider: veo
+  #     prompt: Empty hospital corridor at dusk, slow dolly forward, no text, no people
+  #     seed: 42
+  #     durationSec: 8
